@@ -1,0 +1,139 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="cafe.jjdev.mall.admin.mapper.ProductCommonMapper"> 
+	
+	<!-- 1-2 product상품상세보기에서 사용하는 resultMap -->
+	<resultMap id="productCommonMap"
+				type="cafe.jjdev.mall.admin.vo.ProductCommon">
+		<result column="product_common_no" property="productCommonNo"/>
+		<result column="category_no" property="categoryNo"/>
+		<result column="product_common_name" property="productCommonName"/>
+		<result column="product_common_price" property="productCommonPrice"/>
+		<result column="product_common_description" property="productCommonDescription"/>
+		<result column="product_common_date" property="productCommonDate"/>
+		
+		<collection property="products" 
+					ofType="cafe.jjdev.mall.admin.vo.Product">		
+			<id column="product_no" property="productNo"/>
+			<result column="product_common_no" property="productCommonNo"/>
+			<result column="product_color" property="productColor"/>
+			<result column="product_size" property="productSize"/>
+			<result column="product_stock" property="productStock"/>
+		</collection>
+	</resultMap>
+	
+	<!-- 1 productCommon상세보기에서 사용하는 resultMap -->
+	<resultMap id="categoryMap"
+				type="cafe.jjdev.mall.admin.vo.CategoryProduct">
+		<result column="category_no" property="categoryNo"/>
+		<result column="category_name" property="categoryName"/>		
+		
+		<collection property="productCommons" 
+					ofType="cafe.jjdev.mall.admin.vo.ProductCommon">		
+			<id column="product_common_no" property="productCommonNo"/>
+				<result column="category_no" property="categoryNo"/>
+				<result column="product_common_name" property="productCommonName"/>
+				<result column="product_common_price" property="productCommonPrice"/>
+				<result column="product_common_description" property="productCommonDescription"/>
+				<result column="product_common_date" property="productCommonDate"/>
+		</collection>
+	</resultMap>
+	
+	<!-- 1-1 product 상품추가 -->
+	<insert id="insertProduct"
+		parameterType="cafe.jjdev.mall.admin.vo.Product">
+		INSERT INTO product (
+			product_common_no
+			,product_color
+			,product_size
+			,product_stock
+			) VALUES(
+			#{productCommonNo}
+			,#{productColor}
+			,#{productSize}
+			,#{productStock}
+		)
+	</insert>
+	
+	<!-- 1-1 product 상품 갯수세기 -->
+	<select id="selectProductCount"
+			resultType="int">
+		SELECT COUNT(*) FROM product WHERE product_common_no = #{productCommonNo}
+	</select>
+	
+	<!-- 1-1 product상품상세보기 - 리스트,  페이징, 검색(이름)  -->
+	<select id="selectProductListByProductCommonNo"
+			parameterType="java.util.Map"
+			resultMap="productCommonMap">
+		SELECT 
+			pc.product_common_no
+			,pc.category_no
+			,pc.product_common_name
+			,pc.product_common_price
+			,pc.product_common_description
+			,pc.product_common_date
+			,p.product_no
+			,p.product_common_no
+			,p.product_color
+			,p.product_size
+			,p.product_stock
+		FROM product_common AS pc
+		INNER JOIN product AS p
+		ON pc.product_common_no = p.product_common_no
+		WHERE pc.product_common_no = #{productCommonNo}
+		<if test="searchWord != '%%' ">
+			AND product_common_name LIKE #{searchWord}
+		</if>		
+		LIMIT #{beginRow}, #{ROW_PER_PAGE}
+	</select>
+	
+	<!-- 1 productCommon 상품추가-->
+	<insert id="insertProductCommon"
+			parameterType="cafe.jjdev.mall.admin.vo.ProductCommon">	
+		INSERT INTO product_common (
+			category_no
+			,product_common_name
+			,product_common_price
+			,product_common_description
+			,product_common_date
+			) VALUES (
+			#{categoryNo}
+			,#{productCommonName}
+			,#{productCommonPrice}
+			,#{productCommonDescription}
+			,now()
+			)
+	</insert>
+	
+	<!-- 1 product_common 상품갯수 세기 -->
+	<select id="selectProductCommonCount"
+			resultType="int">
+		SELECT COUNT(*) FROM product_common WHERE category_no = #{categoryNo}
+	</select>
+	
+	<!-- 1 ProductCommon에서 해당 Category 꺼내서 보기 -->
+	<select id="selectCategoryListByCategoryNo"
+			parameterType="java.util.Map"
+			resultMap="categoryMap">
+		SELECT 
+			c.category_no
+			,c.category_name
+			,pc.product_common_no
+			,pc.category_no
+			,pc.product_common_name
+			,pc.product_common_price
+			,pc.product_common_description
+			,pc.product_common_date
+		FROM category AS c
+		INNER JOIN product_common AS pc
+		ON c.category_no = pc.category_no
+		WHERE c.category_no = #{categoryNo}
+		<if test="searchWord != '%%' ">
+			AND product_common_name LIKE #{searchWord}
+		</if>		
+		LIMIT #{beginRow}, #{ROW_PER_PAGE}
+	</select>
+	
+</mapper>
