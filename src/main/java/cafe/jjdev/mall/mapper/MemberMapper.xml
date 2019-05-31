@@ -1,0 +1,167 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="cafe.jjdev.mall.mapper.MemberMapper"> 
+
+	
+	<select id="searchId"
+			parameterType="java.util.Map"
+			resultType="cafe.jjdev.mall.vo.Member">
+		SELECT 
+			member_id AS memberId
+			,member_email AS memberEmail
+		FROM member
+		WHERE member_email = #{memberEmail}
+		AND member_name = #{memberName}
+	</select>
+	
+	<select id="searchPw"
+			parameterType="java.util.Map"
+			resultType="cafe.jjdev.mall.vo.Member">
+		SELECT 
+			member_pw AS memberPw
+			,member_email AS memberEmail
+		FROM member
+		WHERE member_id = #{memberId}
+		AND member_name = #{memberName}
+		AND member_email = #{memberEmail}
+	</select>
+	
+	<insert id="insertMemberOutId"
+			parameterType="cafe.jjdev.mall.vo.Member">
+		INSERT INTO member_out (
+			member_out_id
+			,member_out_date
+			) VALUES (
+			#{memberId}
+			,now()
+			)			
+	</insert>
+		
+	<delete id="deleteMember"
+			parameterType="cafe.jjdev.mall.vo.Member">
+		DELETE 		mc, m
+		FROM 		member_consumer mc
+		INNER JOIN	member m
+		ON 			m.member_no = mc.member_no
+		WHERE 		m.member_no = #{memberNo} 
+		AND 		m.member_pw = #{memberPw}
+	</delete>
+  
+	<update id="updatePassword"
+			parameterType="java.util.Map">
+		UPDATE member
+		SET member_pw = #{memberPw}
+		WHERE member_no = #{memberNo}
+		AND member_pw = #{currentPw}
+	</update>
+	<update id="updatePersonalData"
+			parameterType="cafe.jjdev.mall.vo.Member">
+		UPDATE member
+		SET member_name = #{memberName}
+			,member_phone = #{memberPhone}
+			,member_address = #{memberAddress}
+			,member_gender = #{memberGender}
+			,member_level = #{memberLevel}
+			,member_email = #{memberEmail}
+		WHERE member_no = #{memberNo}
+		AND member_pw = #{memberPw}	
+	</update>
+	
+	<select id="selectMemberByIdAndPw" 
+			parameterType="cafe.jjdev.mall.vo.Member" 
+			resultType="cafe.jjdev.mall.vo.Member">
+		SELECT
+			member_no AS memberNo
+			,member_id AS memberId
+			,member_pw AS memberPw
+			,member_name AS memberName
+			,member_level AS memberLevel		
+		FROM member
+		WHERE member_id = #{memberId}	AND member_pw = #{memberPw}	
+	</select>	
+
+	<select id="selectMemberByMemberNo" 
+			parameterType="int" 
+			resultType="cafe.jjdev.mall.vo.Member">
+		SELECT
+			member_no AS memberNo
+			,member_id AS memberId
+			,member_name AS memberName
+			,member_phone AS memberPhone
+			,member_address AS memberAddress
+			,member_gender AS memberGender
+			,member_level AS memberLevel		
+			,member_email AS memberEmail
+		FROM member
+		WHERE member_no = #{memberNo}		
+	</select>
+	
+	<select id="selectIdCheck"
+			parameterType="String" 
+			resultType="cafe.jjdev.mall.vo.Member">
+		SELECT 
+			member_id AS memberId
+		FROM member_used_id
+		WHERE member_id = #{memberId}
+	</select>	
+	
+	<insert id="insertConsumerByMemberNo"
+			parameterType="cafe.jjdev.mall.vo.Member">
+		INSERT INTO member_consumer(
+			member_no
+			,member_consumer_date_of_birth
+			) VALUES (
+			#{memberNo}
+			,now()
+			)	
+	</insert>
+	
+	<insert id="insertEmployeeByMemberNo"
+			parameterType="cafe.jjdev.mall.vo.Member">
+		INSERT INTO member_employee(
+			member_no
+			,member_consumer_date_of_birth
+			) VALUES (
+			#{memberNo}
+			,now()
+			)	
+	</insert>
+	
+	<insert id="insertUsedMemberId"
+			parameterType="cafe.jjdev.mall.vo.Member">
+		INSERT INTO member_used_id(
+			member_id
+			) VALUES (
+			#{memberId}
+			)			
+	</insert>	
+	
+	<insert id="insertMember" 
+			parameterType="cafe.jjdev.mall.vo.Member">
+			<selectKey resultType="int" keyProperty="memberNo" order="AFTER">
+				SELECT LAST_INSERT_ID()
+			</selectKey>
+	 	INSERT INTO member(
+	 		member_id
+	 		,member_pw
+	 		,member_name
+	 		,member_phone
+	 		,member_address
+	 		,member_gender
+	 		,member_level
+	 		,member_email
+	 	) VALUES (
+		#{memberId}
+		, #{memberPw}
+		, #{memberName}
+		, #{memberPhone}
+		, #{memberAddress}
+		, #{memberGender}
+		, #{memberLevel}
+		, #{memberEmail}
+	)
+	</insert>
+  </mapper>
